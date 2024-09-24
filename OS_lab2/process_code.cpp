@@ -88,7 +88,7 @@ int main() {
             if(current_process.instruct_num <= current_instructions)
             {
                 result.push_back(current_process.pid);
-                current_instructions = current_instructions - current_process.instruct_num;
+                // current_instructions = current_instructions - current_process.instruct_num;
                 for (size_t j = 0; j < processes.size(); ++j) {
                     if (processes[j].needed_resources > 0) {
                         auto it = find(processes[j].waiting_for_pids.begin(), processes[j].waiting_for_pids.end(), current_process.pid);
@@ -98,28 +98,38 @@ int main() {
                         }
                     }
                 }
+
+                for (size_t i = 0; i < processes.size(); ++i) {
+                    if (processes[i].instruct_num > 0 && processes[i].needed_resources == 0) { // 进程未完成且不需要等待其他进程
+                        ready_queue.push(processes[i]);
+                        processes.erase(processes.begin() + i);
+                        break; 
+                    }
+                }    
             }
-            else {
+            else
+            {
+                result.push_back(current_process.pid);
                 current_process.instruct_num -= current_instructions;
                 Process temp_process;
                 temp_process.pid = current_process.pid; // 可选，如果需要保存 pid
                 temp_process.instruct_num = current_process.instruct_num;
                 temp_process.needed_resources = current_process.needed_resources;
                 temp_process.waiting_for_pids = current_process.waiting_for_pids;
-                blocked_queue.push(temp_process);
+                ready_queue.push(temp_process);
             }
         }
 
-        while (ready_queue.size() < m) {
-            if(blocked_queue.size()!=0)
-            {
-                ready_queue.push(blocked_queue.front());
-                blocked_queue.pop();
-                if(ready_queue.size()>=m) break;
-                if(blocked_queue.size()==0) break;
-            }
-            else break;
-        }
+        // while (ready_queue.size() < m) {
+        //     if(blocked_queue.size()!=0)
+        //     {
+        //         ready_queue.push(blocked_queue.front());
+        //         blocked_queue.pop();
+        //         if(ready_queue.size()>=m) break;
+        //         if(blocked_queue.size()==0) break;
+        //     }
+        //     else break;
+        // }
 
     }
 
